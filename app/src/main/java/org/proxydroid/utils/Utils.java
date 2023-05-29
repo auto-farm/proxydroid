@@ -8,23 +8,22 @@ import android.content.pm.Signature;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.util.Log;
-
-import org.proxydroid.Exec;
-import org.proxydroid.ProxyDroidService;
-import org.proxydroid.R;
-
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import org.proxydroid.Exec;
+import org.proxydroid.ProxyDroidService;
+import org.proxydroid.R;
 
 public class Utils {
 
   public final static String TAG = "ProxyDroid";
   public final static String DEFAULT_SHELL = "/system/bin/sh";
-  public final static String DEFAULT_ROOTS[] = {"/sbin/su", "/system/bin/su", "/system/xbin/su", "/su/bin/su", "/su/xbin/su", "/magisk/.core/bin/su"};
+  public final static String DEFAULT_ROOTS[] = {"/sbin/su", "/system/bin/su", "/system/xbin/su",
+      "/su/bin/su", "/su/xbin/su", "/magisk/.core/bin/su"};
   public final static String DEFAULT_IPTABLES = "iptables";
   public final static String ALTERNATIVE_IPTABLES = "/system/bin/iptables";
   public final static int TIME_OUT = -99;
@@ -49,8 +48,9 @@ public class Utils {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
-      if (c == '\\' || c == '$' || c == '`' || c == '"')
+      if (c == '\\' || c == '$' || c == '`' || c == '"') {
         sb.append('\\');
+      }
       sb.append(c);
     }
     return sb.toString();
@@ -77,8 +77,9 @@ public class Utils {
 
     int exitcode = runScript(command, sb, 10 * 1000, true);
 
-    if (exitcode == TIME_OUT)
+    if (exitcode == TIME_OUT) {
       return;
+    }
 
     lines = sb.toString();
 
@@ -91,8 +92,9 @@ public class Utils {
 
     if (!compatible || !version) {
       iptables = ALTERNATIVE_IPTABLES;
-      if (!new File(iptables).exists())
+      if (!new File(iptables).exists()) {
         iptables = "iptables";
+      }
     }
 
   }
@@ -116,22 +118,25 @@ public class Utils {
   }
 
   public static boolean getHasRedirectSupport() {
-    if (hasRedirectSupport == -1)
+    if (hasRedirectSupport == -1) {
       initHasRedirectSupported();
+    }
     return hasRedirectSupport == 1;
   }
 
   public static String getIptables() {
-    if (iptables == null)
+    if (iptables == null) {
       checkIptables();
+    }
     return iptables;
   }
 
   private static String getShell() {
     if (shell == null) {
       shell = DEFAULT_SHELL;
-      if (!new File(shell).exists())
+      if (!new File(shell).exists()) {
         shell = "sh";
+      }
     }
     return shell;
   }
@@ -142,20 +147,23 @@ public class Utils {
       Signature[] sigs;
       sigs = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(),
           PackageManager.GET_SIGNATURES).signatures;
-      if (sigs != null && sigs.length > 0)
+      if (sigs != null && sigs.length > 0) {
         sig = sigs[0];
+      }
     } catch (Exception ignore) {
       // Nothing
     }
-    if (sig == null)
+    if (sig == null) {
       return null;
+    }
     return sig.toCharsString().substring(11, 256);
   }
 
   public static void initHasRedirectSupported() {
 
-    if (!Utils.isRoot())
+    if (!Utils.isRoot()) {
       return;
+    }
 
     StringBuilder sb = new StringBuilder();
     String command = Utils.getIptables()
@@ -170,8 +178,9 @@ public class Utils {
     // flush the check command
     Utils.runRootCommand(command.replace("-A", "-D"));
 
-    if (exitcode == TIME_OUT)
+    if (exitcode == TIME_OUT) {
       return;
+    }
 
     if (lines.contains("No chain/target/match")) {
       hasRedirectSupport = 0;
@@ -179,9 +188,9 @@ public class Utils {
   }
 
   public static boolean isInitialized() {
-    if (initialized)
+    if (initialized) {
       return true;
-    else {
+    } else {
       initialized = true;
       return false;
     }
@@ -190,16 +199,17 @@ public class Utils {
 
   public static boolean isRoot() {
 
-    if (isRoot != -1)
+    if (isRoot != -1) {
       return isRoot == 1;
+    }
 
     // switch between binaries
     root_shell = "su";
     for (int i = 0; i < DEFAULT_ROOTS.length; i++) {
-        if (new File(DEFAULT_ROOTS[i]).exists()) {
-            root_shell = DEFAULT_ROOTS[i];
-            break;
-        }
+      if (new File(DEFAULT_ROOTS[i]).exists()) {
+        root_shell = DEFAULT_ROOTS[i];
+        break;
+      }
     }
 
     String lines = null;
@@ -253,7 +263,7 @@ public class Utils {
   }
 
   private synchronized static int runScript(String script, StringBuilder res,
-                                            long timeout, boolean asroot) {
+      long timeout, boolean asroot) {
     final ScriptRunner runner = new ScriptRunner(script, res, asroot);
     runner.start();
     try {
@@ -284,8 +294,9 @@ public class Utils {
       byte[] bytes = new byte[buffer_size];
       for (; ; ) {
         int count = is.read(bytes, 0, buffer_size);
-        if (count == -1)
+        if (count == -1) {
           break;
+        }
         os.write(bytes, 0, count);
       }
     } catch (Exception ignored) {
@@ -320,6 +331,7 @@ public class Utils {
    * Internal thread used to execute scripts (as root or not).
    */
   private static final class ScriptRunner extends Thread {
+
     private final String scripts;
     private final StringBuilder result;
     private final boolean asroot;
@@ -335,7 +347,7 @@ public class Utils {
      * @param asroot if true, executes the script as root
      */
     public ScriptRunner(String script, StringBuilder result,
-                        boolean asroot) {
+        boolean asroot) {
       this.scripts = script;
       this.result = result;
       this.asroot = asroot;
@@ -428,7 +440,9 @@ public class Utils {
           exitcode = Exec.waitFor(pid[0]);
         }
 
-        if (result == null || pipe == null) return;
+        if (result == null || pipe == null) {
+          return;
+        }
 
         final InputStream stdout = new FileInputStream(pipe);
         final byte buf[] = new byte[8192];
@@ -442,8 +456,9 @@ public class Utils {
 
       } catch (Exception ex) {
         Log.e(TAG, "Cannot execute command", ex);
-        if (result != null)
+        if (result != null) {
           result.append("\n").append(ex);
+        }
       } finally {
         if (pipe != null) {
           Exec.close(pipe);

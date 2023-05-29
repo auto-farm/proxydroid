@@ -26,15 +26,14 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 
 /**
- * A {@link Preference} that displays a list of entries as a dialog and allows
- * multiple selections
+ * A {@link Preference} that displays a list of entries as a dialog and allows multiple selections
  * <p>
- * This preference will store a string into the SharedPreferences. This string
- * will be the values selected from the {@link #setEntryValues(CharSequence[])}
- * array.
+ * This preference will store a string into the SharedPreferences. This string will be the values
+ * selected from the {@link #setEntryValues(CharSequence[])} array.
  * </p>
  */
 public class ListPreferenceMultiSelect extends ListPreference {
+
   // Need to make sure the SEPARATOR is unique and weird enough that it
   // doesn't match one of the entries.
   // Not using any fancy symbols because this is interpreted as a regex for
@@ -75,19 +74,21 @@ public class ListPreferenceMultiSelect extends ListPreference {
         new DialogInterface.OnMultiChoiceClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which,
-                              boolean val) {
+              boolean val) {
             mClickedDialogEntryIndices[which] = val;
           }
         });
   }
 
   public static String[] parseStoredValue(CharSequence val) {
-    if (val == null)
+    if (val == null) {
       return null;
-    if ("".equals(val))
+    }
+    if ("".equals(val)) {
       return null;
-    else
+    } else {
       return ((String) val).split(SEPARATOR);
+    }
   }
 
   private void restoreCheckedEntries() {
@@ -123,8 +124,9 @@ public class ListPreferenceMultiSelect extends ListPreference {
 
       if (callChangeListener(value)) {
         String val = value.toString();
-        if (val.length() > 0)
+        if (val.length() > 0) {
           val = val.substring(0, val.length() - SEPARATOR.length());
+        }
         setValue(val);
       }
     }

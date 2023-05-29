@@ -38,8 +38,6 @@
 
 package org.proxydroid;
 
-import static java.util.Arrays.stream;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -54,13 +52,11 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
-
-import org.proxydroid.utils.Utils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.proxydroid.utils.Utils;
 
 public class ProxyDroidWidgetProvider extends AppWidgetProvider {
 

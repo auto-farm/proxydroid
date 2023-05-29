@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 29
@@ -34,7 +33,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            version '3.23.0'
+            version '3.22.1+'
             path "src/main/cpp/CMakeLists.txt"
         }
     }

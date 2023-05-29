@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  *                            ___====-_  _-====___
  *                      _--^^^#####//      \\#####^^^--_
  *                   _-^##########// (    ) \\##########^-_
@@ -49,9 +49,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-
 import com.ksmaze.android.preference.ListPreferenceMultiSelect;
-
 import org.proxydroid.utils.Constraints;
 import org.proxydroid.utils.Utils;
 
@@ -64,9 +62,13 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(final Context context, final Intent intent) {
 
-    if (Utils.isConnecting()) return;
+    if (Utils.isConnecting()) {
+      return;
+    }
 
-    if (!intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) return;
+    if (!intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+      return;
+    }
 
     mHandler.post(new Runnable() {
       @Override
@@ -80,10 +82,13 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
         if (networkInfo != null) {
           if (networkInfo.getState() == NetworkInfo.State.CONNECTING
               || networkInfo.getState() == NetworkInfo.State.DISCONNECTING
-              || networkInfo.getState() == NetworkInfo.State.UNKNOWN)
+              || networkInfo.getState() == NetworkInfo.State.UNKNOWN) {
             return;
+          }
         } else {
-          if (!Utils.isWorking()) return;
+          if (!Utils.isWorking()) {
+            return;
+          }
         }
 
         SharedPreferences settings = PreferenceManager
@@ -135,8 +140,9 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
           }
         } else {
           // no network available now
-          if (networkInfo.getState() != NetworkInfo.State.CONNECTED)
+          if (networkInfo.getState() != NetworkInfo.State.CONNECTED) {
             return;
+          }
 
           if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
             // if no last SSID, should give up here
@@ -148,12 +154,15 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
               if (wInfo != null) {
                 // compare with the current SSID
                 String current = wInfo.getSSID();
-                if (current != null) current = current.replace("\"", "");
+                if (current != null) {
+                  current = current.replace("\"", "");
+                }
                 if (current != null && !current.equals(lastSSID)) {
                   // need to switch profile, so stop service first
-                  if (Utils.isWorking())
+                  if (Utils.isWorking()) {
                     context.stopService(new Intent(context,
                         ProxyDroidService.class));
+                  }
                 }
               }
             }
@@ -161,9 +170,10 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
             // still satisfy the last trigger
             if (!lastSSID.equals(Constraints.ONLY_3G)
                 && !lastSSID.equals(Constraints.WIFI_AND_3G)) {
-              if (Utils.isWorking())
+              if (Utils.isWorking()) {
                 context.stopService(new Intent(context,
                     ProxyDroidService.class));
+              }
             }
           }
         }
@@ -185,49 +195,59 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
   public String onlineSSID(Context context, String ssid, String excludedSsid) {
     String ssids[] = ListPreferenceMultiSelect.parseStoredValue(ssid);
     String excludedSsids[] = ListPreferenceMultiSelect.parseStoredValue(excludedSsid);
-    if (ssids == null)
+    if (ssids == null) {
       return null;
-    if (ssids.length < 1)
+    }
+    if (ssids.length < 1) {
       return null;
+    }
     ConnectivityManager manager = (ConnectivityManager) context
         .getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkInfo networkInfo = manager.getActiveNetworkInfo();
-    if (networkInfo == null)
+    if (networkInfo == null) {
       return null;
+    }
     if (networkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
       for (String item : ssids) {
-        if (Constraints.WIFI_AND_3G.equals(item))
+        if (Constraints.WIFI_AND_3G.equals(item)) {
           return item;
-        if (Constraints.ONLY_3G.equals(item))
+        }
+        if (Constraints.ONLY_3G.equals(item)) {
           return item;
+        }
       }
       return null;
     }
     WifiManager wm = (WifiManager) context
         .getSystemService(Context.WIFI_SERVICE);
     WifiInfo wInfo = wm.getConnectionInfo();
-    if (wInfo == null || wInfo.getSSID() == null)
+    if (wInfo == null || wInfo.getSSID() == null) {
       return null;
+    }
     String current = wInfo.getSSID();
-    if (current == null || "".equals(current))
+    if (current == null || "".equals(current)) {
       return null;
+    }
     current = current.replace("\"", "");
 
     if (excludedSsids != null) {
-        for (String item : excludedSsids) {
-            if (current.equals(item)) {
-                return null; // Never connect proxy on excluded ssid
-            }
+      for (String item : excludedSsids) {
+        if (current.equals(item)) {
+          return null; // Never connect proxy on excluded ssid
         }
+      }
     }
 
     for (String item : ssids) {
-      if (Constraints.WIFI_AND_3G.equals(item))
+      if (Constraints.WIFI_AND_3G.equals(item)) {
         return item;
-      if (Constraints.ONLY_WIFI.equals(item))
+      }
+      if (Constraints.ONLY_WIFI.equals(item)) {
         return item;
-      if (current.equals(item))
+      }
+      if (current.equals(item)) {
         return item;
+      }
     }
     return null;
   }

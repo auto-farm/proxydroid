@@ -32,435 +32,440 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import org.proxydroid.utils.ImageLoader;
-import org.proxydroid.utils.ImageLoaderFactory;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import org.proxydroid.utils.ImageLoader;
+import org.proxydroid.utils.ImageLoaderFactory;
 
 public class AppManager extends AppCompatActivity implements OnCheckedChangeListener,
-		OnClickListener {
-
-	private ProxyedApp[] apps = null;
-
-	private ListView listApps;
-
-	private AppManager mAppManager;
-
-	private TextView overlay;
-
-	private ProgressDialog pd = null;
-	private ListAdapter adapter;
-
-	private ImageLoader dm;
-
-	private static final int MSG_LOAD_START = 1;
-	private static final int MSG_LOAD_FINISH = 2;
-
-	public final static String PREFS_KEY_PROXYED = "Proxyed";
-
-	private boolean appsLoaded = false;
-
-	final Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_LOAD_START:
-				pd = ProgressDialog.show(AppManager.this, "",
-						getString(R.string.loading), true, true);
-				break;
-			case MSG_LOAD_FINISH:
-
-				listApps.setAdapter(adapter);
-
-				listApps.setOnScrollListener(new OnScrollListener() {
-
-					boolean visible;
-
-					@Override
-					public void onScrollStateChanged(AbsListView view,
-							int scrollState) {
-						visible = true;
-						if (scrollState == ListView.OnScrollListener.SCROLL_STATE_IDLE) {
-							overlay.setVisibility(View.INVISIBLE);
-						}
-					}
-
-					@Override
-					public void onScroll(AbsListView view,
-							int firstVisibleItem, int visibleItemCount,
-							int totalItemCount) {
-						if (visible) {
-							String name = apps[firstVisibleItem].getName();
-							if (name != null && name.length() > 1)
-								overlay.setText(apps[firstVisibleItem]
-										.getName().substring(0, 1));
-							else
-								overlay.setText("*");
-							overlay.setVisibility(View.VISIBLE);
-						}
-					}
-				});
-
-				if (pd != null) {
-					pd.dismiss();
-					pd = null;
-				}
-				break;
-			}
-			super.handleMessage(msg);
-		}
-	};
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			// app icon in action bar clicked; go home
-//			Intent intent = new Intent(this, ProxyDroid.class);
-//			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//			startActivity(intent);
-			finish();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		((ProxyDroidApplication)getApplication())
-				.firebaseAnalytics.setCurrentScreen(this, "app_manager", null);
-		
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-		this.setContentView(R.layout.layout_apps);
-
-		dm = ImageLoaderFactory.getImageLoader(this);
-
-		this.overlay = (TextView) View.inflate(this, R.layout.overlay, null);
-		getWindowManager()
-				.addView(
-						overlay,
-						new WindowManager.LayoutParams(
-								LayoutParams.WRAP_CONTENT,
-								LayoutParams.WRAP_CONTENT,
-								WindowManager.LayoutParams.TYPE_APPLICATION,
-								WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-										| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-								PixelFormat.TRANSLUCENT));
-
-		mAppManager = this;
-
-	}
-	
-	/** Called when the activity is closed. */
-	@Override
-	public void onDestroy() {
-		
-		getWindowManager().removeView(overlay);
-
-		super.onDestroy();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		new Thread() {
-
-			@Override
-			public void run() {
-				handler.sendEmptyMessage(MSG_LOAD_START);
-
-				listApps = (ListView) findViewById(R.id.applistview);
-
-				if (!appsLoaded)
-					loadApps();
-				handler.sendEmptyMessage(MSG_LOAD_FINISH);
-			}
-		}.start();
-
-	}
-
-	private void loadApps() {
-		getApps(this);
-
-		Arrays.sort(apps, new Comparator<ProxyedApp>() {
-			@Override
-			public int compare(ProxyedApp o1, ProxyedApp o2) {
-				if (o1 == null || o2 == null || o1.getName() == null
-						|| o2.getName() == null)
-					return 1;
-				if (o1.isProxyed() == o2.isProxyed())
-					return o1.getName().compareTo(o2.getName());
-				if (o1.isProxyed())
-					return -1;
-				return 1;
-			}
-		});
-
-		final LayoutInflater inflater = getLayoutInflater();
+    OnClickListener {
+
+  private ProxyedApp[] apps = null;
+
+  private ListView listApps;
+
+  private AppManager mAppManager;
+
+  private TextView overlay;
+
+  private ProgressDialog pd = null;
+  private ListAdapter adapter;
+
+  private ImageLoader dm;
+
+  private static final int MSG_LOAD_START = 1;
+  private static final int MSG_LOAD_FINISH = 2;
+
+  public final static String PREFS_KEY_PROXYED = "Proxyed";
+
+  private boolean appsLoaded = false;
+
+  final Handler handler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case MSG_LOAD_START:
+          pd = ProgressDialog.show(AppManager.this, "",
+              getString(R.string.loading), true, true);
+          break;
+        case MSG_LOAD_FINISH:
+
+          listApps.setAdapter(adapter);
+
+          listApps.setOnScrollListener(new OnScrollListener() {
+
+            boolean visible;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view,
+                int scrollState) {
+              visible = true;
+              if (scrollState == ListView.OnScrollListener.SCROLL_STATE_IDLE) {
+                overlay.setVisibility(View.INVISIBLE);
+              }
+            }
+
+            @Override
+            public void onScroll(AbsListView view,
+                int firstVisibleItem, int visibleItemCount,
+                int totalItemCount) {
+              if (visible) {
+                String name = apps[firstVisibleItem].getName();
+                if (name != null && name.length() > 1) {
+                  overlay.setText(apps[firstVisibleItem]
+                      .getName().substring(0, 1));
+                } else {
+                  overlay.setText("*");
+                }
+                overlay.setVisibility(View.VISIBLE);
+              }
+            }
+          });
+
+          if (pd != null) {
+            pd.dismiss();
+            pd = null;
+          }
+          break;
+      }
+      super.handleMessage(msg);
+    }
+  };
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case android.R.id.home:
+        finish();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+    this.setContentView(R.layout.layout_apps);
+
+    dm = ImageLoaderFactory.getImageLoader(this);
+
+    this.overlay = (TextView) View.inflate(this, R.layout.overlay, null);
+    getWindowManager()
+        .addView(
+            overlay,
+            new WindowManager.LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSLUCENT));
+
+    mAppManager = this;
+
+  }
+
+  /**
+   * Called when the activity is closed.
+   */
+  @Override
+  public void onDestroy() {
+
+    getWindowManager().removeView(overlay);
+
+    super.onDestroy();
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+
+    new Thread() {
+
+      @Override
+      public void run() {
+        handler.sendEmptyMessage(MSG_LOAD_START);
+
+        listApps = (ListView) findViewById(R.id.applistview);
+
+        if (!appsLoaded) {
+          loadApps();
+        }
+        handler.sendEmptyMessage(MSG_LOAD_FINISH);
+      }
+    }.start();
+
+  }
+
+  private void loadApps() {
+    getApps(this);
+
+    Arrays.sort(apps, new Comparator<ProxyedApp>() {
+      @Override
+      public int compare(ProxyedApp o1, ProxyedApp o2) {
+        if (o1 == null || o2 == null || o1.getName() == null
+            || o2.getName() == null) {
+          return 1;
+        }
+        if (o1.isProxyed() == o2.isProxyed()) {
+          return o1.getName().compareTo(o2.getName());
+        }
+        if (o1.isProxyed()) {
+          return -1;
+        }
+        return 1;
+      }
+    });
 
-		adapter = new ArrayAdapter<ProxyedApp>(this, R.layout.layout_apps_item,
-				R.id.itemtext, apps) {
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				ListEntry entry;
-				if (convertView == null) {
-					// Inflate a new view
-					convertView = inflater.inflate(R.layout.layout_apps_item,
-							parent, false);
-					entry = new ListEntry();
-					entry.icon = (ImageView) convertView
-							.findViewById(R.id.itemicon);
-					entry.box = (CheckBox) convertView
-							.findViewById(R.id.itemcheck);
-					entry.text = (TextView) convertView
-							.findViewById(R.id.itemtext);
+    final LayoutInflater inflater = getLayoutInflater();
 
-					entry.text.setOnClickListener(mAppManager);
+    adapter = new ArrayAdapter<ProxyedApp>(this, R.layout.layout_apps_item,
+        R.id.itemtext, apps) {
+      @Override
+      public View getView(int position, View convertView, ViewGroup parent) {
+        ListEntry entry;
+        if (convertView == null) {
+          // Inflate a new view
+          convertView = inflater.inflate(R.layout.layout_apps_item,
+              parent, false);
+          entry = new ListEntry();
+          entry.icon = (ImageView) convertView
+              .findViewById(R.id.itemicon);
+          entry.box = (CheckBox) convertView
+              .findViewById(R.id.itemcheck);
+          entry.text = (TextView) convertView
+              .findViewById(R.id.itemtext);
 
-					convertView.setTag(entry);
-
-					entry.box.setOnCheckedChangeListener(mAppManager);
-				} else {
-					// Convert an existing view
-					entry = (ListEntry) convertView.getTag();
-				}
+          entry.text.setOnClickListener(mAppManager);
 
-				final ProxyedApp app = apps[position];
+          convertView.setTag(entry);
 
-				entry.icon.setTag(app.getUid());
+          entry.box.setOnCheckedChangeListener(mAppManager);
+        } else {
+          // Convert an existing view
+          entry = (ListEntry) convertView.getTag();
+        }
 
-				dm.DisplayImage(app.getUid(),
-						(Activity) convertView.getContext(), entry.icon);
+        final ProxyedApp app = apps[position];
 
-				entry.text.setText(app.getName());
+        entry.icon.setTag(app.getUid());
 
-				final CheckBox box = entry.box;
-				box.setTag(app);
-				box.setChecked(app.isProxyed());
+        dm.DisplayImage(app.getUid(),
+            (Activity) convertView.getContext(), entry.icon);
 
-				entry.text.setTag(box);
+        entry.text.setText(app.getName());
 
-				return convertView;
-			}
-		};
+        final CheckBox box = entry.box;
+        box.setTag(app);
+        box.setChecked(app.isProxyed());
 
-		appsLoaded = true;
+        entry.text.setTag(box);
 
-	}
+        return convertView;
+      }
+    };
 
-	private static class ListEntry {
-		private CheckBox box;
-		private TextView text;
-		private ImageView icon;
-	}
+    appsLoaded = true;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onStop()
-	 */
-	@Override
-	protected void onStop() {
-		super.onStop();
+  }
 
-		// Log.d(getClass().getName(),"Exiting Preferences");
-	}
+  private static class ListEntry {
 
-	public static ProxyedApp[] getProxyedApps(Context context, boolean self) {
+    private CheckBox box;
+    private TextView text;
+    private ImageView icon;
+  }
 
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+  /*
+   * (non-Javadoc)
+   *
+   * @see android.app.Activity#onStop()
+   */
+  @Override
+  protected void onStop() {
+    super.onStop();
 
-		String tordAppString = prefs.getString(PREFS_KEY_PROXYED, "");
-		String[] tordApps;
+    // Log.d(getClass().getName(),"Exiting Preferences");
+  }
 
-		StringTokenizer st = new StringTokenizer(tordAppString, "|");
-		tordApps = new String[st.countTokens()];
-		int tordIdx = 0;
-		while (st.hasMoreTokens()) {
-			tordApps[tordIdx++] = st.nextToken();
-		}
+  public static ProxyedApp[] getProxyedApps(Context context, boolean self) {
 
-		Arrays.sort(tordApps);
+    SharedPreferences prefs = PreferenceManager
+        .getDefaultSharedPreferences(context);
 
-		// else load the apps up
-		PackageManager pMgr = context.getPackageManager();
+    String tordAppString = prefs.getString(PREFS_KEY_PROXYED, "");
+    String[] tordApps;
 
-		List<ApplicationInfo> lAppInfo = pMgr.getInstalledApplications(0);
+    StringTokenizer st = new StringTokenizer(tordAppString, "|");
+    tordApps = new String[st.countTokens()];
+    int tordIdx = 0;
+    while (st.hasMoreTokens()) {
+      tordApps[tordIdx++] = st.nextToken();
+    }
 
-		Iterator<ApplicationInfo> itAppInfo = lAppInfo.iterator();
+    Arrays.sort(tordApps);
 
-		Vector<ProxyedApp> vectorApps = new Vector<ProxyedApp>();
+    // else load the apps up
+    PackageManager pMgr = context.getPackageManager();
 
-		ApplicationInfo aInfo = null;
+    List<ApplicationInfo> lAppInfo = pMgr.getInstalledApplications(0);
 
-		int appIdx = 0;
+    Iterator<ApplicationInfo> itAppInfo = lAppInfo.iterator();
 
-		while (itAppInfo.hasNext()) {
-			aInfo = itAppInfo.next();
+    Vector<ProxyedApp> vectorApps = new Vector<ProxyedApp>();
 
-			// ignore all system apps
-			if (aInfo.uid < 10000)
-				continue;
+    ApplicationInfo aInfo = null;
 
-			ProxyedApp app = new ProxyedApp();
+    int appIdx = 0;
 
-			app.setUid(aInfo.uid);
+    while (itAppInfo.hasNext()) {
+      aInfo = itAppInfo.next();
 
-			app.setUsername(pMgr.getNameForUid(app.getUid()));
+      // ignore all system apps
+      if (aInfo.uid < 10000) {
+        continue;
+      }
 
-			// check if this application is allowed
-			if (aInfo.packageName != null
-					&& aInfo.packageName.equals("org.proxydroid")) {
-				if (self)
-					app.setProxyed(true);
-			} else if (Arrays.binarySearch(tordApps, app.getUsername()) >= 0) {
-				app.setProxyed(true);
-			} else {
-				app.setProxyed(false);
-			}
+      ProxyedApp app = new ProxyedApp();
 
-			if (app.isProxyed())
-				vectorApps.add(app);
+      app.setUid(aInfo.uid);
 
-		}
+      app.setUsername(pMgr.getNameForUid(app.getUid()));
 
-		ProxyedApp[] apps = new ProxyedApp[vectorApps.size()];
-		vectorApps.toArray(apps);
-		return apps;
-	}
+      // check if this application is allowed
+      if (aInfo.packageName != null
+          && aInfo.packageName.equals("org.proxydroid")) {
+        if (self) {
+          app.setProxyed(true);
+        }
+      } else if (Arrays.binarySearch(tordApps, app.getUsername()) >= 0) {
+        app.setProxyed(true);
+      } else {
+        app.setProxyed(false);
+      }
 
-	public void getApps(Context context) {
+      if (app.isProxyed()) {
+        vectorApps.add(app);
+      }
 
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+    }
 
-		String tordAppString = prefs.getString(PREFS_KEY_PROXYED, "");
-		String[] tordApps;
+    ProxyedApp[] apps = new ProxyedApp[vectorApps.size()];
+    vectorApps.toArray(apps);
+    return apps;
+  }
 
-		StringTokenizer st = new StringTokenizer(tordAppString, "|");
-		tordApps = new String[st.countTokens()];
-		int tordIdx = 0;
-		while (st.hasMoreTokens()) {
-			tordApps[tordIdx++] = st.nextToken();
-		}
+  public void getApps(Context context) {
 
-		Arrays.sort(tordApps);
+    SharedPreferences prefs = PreferenceManager
+        .getDefaultSharedPreferences(context);
 
-		Vector<ProxyedApp> vectorApps = new Vector<ProxyedApp>();
+    String tordAppString = prefs.getString(PREFS_KEY_PROXYED, "");
+    String[] tordApps;
 
-		// else load the apps up
-		PackageManager pMgr = context.getPackageManager();
+    StringTokenizer st = new StringTokenizer(tordAppString, "|");
+    tordApps = new String[st.countTokens()];
+    int tordIdx = 0;
+    while (st.hasMoreTokens()) {
+      tordApps[tordIdx++] = st.nextToken();
+    }
 
-		List<ApplicationInfo> lAppInfo = pMgr.getInstalledApplications(0);
+    Arrays.sort(tordApps);
 
-		Iterator<ApplicationInfo> itAppInfo = lAppInfo.iterator();
+    Vector<ProxyedApp> vectorApps = new Vector<ProxyedApp>();
 
-		ApplicationInfo aInfo = null;
+    // else load the apps up
+    PackageManager pMgr = context.getPackageManager();
 
-		while (itAppInfo.hasNext()) {
-			aInfo = itAppInfo.next();
+    List<ApplicationInfo> lAppInfo = pMgr.getInstalledApplications(0);
 
-			// ignore system apps
-			if (aInfo.uid < 10000)
-				continue;
+    Iterator<ApplicationInfo> itAppInfo = lAppInfo.iterator();
 
-			if (aInfo.processName == null)
-				continue;
-			if (pMgr.getApplicationLabel(aInfo) == null
-					|| pMgr.getApplicationLabel(aInfo).toString().equals(""))
-				continue;
-			if (pMgr.getApplicationIcon(aInfo) == null)
-				continue;
+    ApplicationInfo aInfo = null;
 
-			ProxyedApp tApp = new ProxyedApp();
+    while (itAppInfo.hasNext()) {
+      aInfo = itAppInfo.next();
 
-			tApp.setEnabled(aInfo.enabled);
-			tApp.setUid(aInfo.uid);
-			tApp.setUsername(pMgr.getNameForUid(tApp.getUid()));
-			tApp.setProcname(aInfo.processName);
-			tApp.setName(pMgr.getApplicationLabel(aInfo).toString());
+      // ignore system apps
+      if (aInfo.uid < 10000) {
+        continue;
+      }
 
-			// check if this application is allowed
-			if (Arrays.binarySearch(tordApps, tApp.getUsername()) >= 0) {
-				tApp.setProxyed(true);
-			} else {
-				tApp.setProxyed(false);
-			}
+      if (aInfo.processName == null) {
+        continue;
+      }
+      if (pMgr.getApplicationLabel(aInfo) == null
+          || pMgr.getApplicationLabel(aInfo).toString().equals("")) {
+        continue;
+      }
+      if (pMgr.getApplicationIcon(aInfo) == null) {
+        continue;
+      }
 
-			vectorApps.add(tApp);
-		}
+      ProxyedApp tApp = new ProxyedApp();
 
-		apps = new ProxyedApp[vectorApps.size()];
-		vectorApps.toArray(apps);
+      tApp.setEnabled(aInfo.enabled);
+      tApp.setUid(aInfo.uid);
+      tApp.setUsername(pMgr.getNameForUid(tApp.getUid()));
+      tApp.setProcname(aInfo.processName);
+      tApp.setName(pMgr.getApplicationLabel(aInfo).toString());
 
-	}
+      // check if this application is allowed
+      if (Arrays.binarySearch(tordApps, tApp.getUsername()) >= 0) {
+        tApp.setProxyed(true);
+      } else {
+        tApp.setProxyed(false);
+      }
 
-	public void saveAppSettings(Context context) {
-		if (apps == null)
-			return;
+      vectorApps.add(tApp);
+    }
 
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
+    apps = new ProxyedApp[vectorApps.size()];
+    vectorApps.toArray(apps);
 
-		// final SharedPreferences prefs =
-		// context.getSharedPreferences(PREFS_KEY, 0);
+  }
 
-		StringBuilder tordApps = new StringBuilder();
+  public void saveAppSettings(Context context) {
+    if (apps == null) {
+      return;
+    }
 
-		for (int i = 0; i < apps.length; i++) {
-			if (apps[i].isProxyed()) {
-				tordApps.append(apps[i].getUsername());
-				tordApps.append("|");
-			}
-		}
+    SharedPreferences prefs = PreferenceManager
+        .getDefaultSharedPreferences(this);
 
-		Editor edit = prefs.edit();
-		edit.putString(PREFS_KEY_PROXYED, tordApps.toString());
-		edit.commit();
+    // final SharedPreferences prefs =
+    // context.getSharedPreferences(PREFS_KEY, 0);
 
-	}
+    StringBuilder tordApps = new StringBuilder();
 
-	/**
-	 * Called an application is check/unchecked
-	 */
-	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		final ProxyedApp app = (ProxyedApp) buttonView.getTag();
-		if (app != null) {
-			app.setProxyed(isChecked);
-		}
+    for (int i = 0; i < apps.length; i++) {
+      if (apps[i].isProxyed()) {
+        tordApps.append(apps[i].getUsername());
+        tordApps.append("|");
+      }
+    }
 
-		saveAppSettings(this);
+    Editor edit = prefs.edit();
+    edit.putString(PREFS_KEY_PROXYED, tordApps.toString());
+    edit.commit();
 
-	}
+  }
 
-	@Override
-	public void onClick(View v) {
+  /**
+   * Called an application is check/unchecked
+   */
+  @Override
+  public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+    final ProxyedApp app = (ProxyedApp) buttonView.getTag();
+    if (app != null) {
+      app.setProxyed(isChecked);
+    }
 
-		CheckBox cbox = (CheckBox) v.getTag();
+    saveAppSettings(this);
 
-		final ProxyedApp app = (ProxyedApp) cbox.getTag();
-		if (app != null) {
-			app.setProxyed(!app.isProxyed());
-			cbox.setChecked(app.isProxyed());
-		}
+  }
 
-		saveAppSettings(this);
+  @Override
+  public void onClick(View v) {
 
-	}
+    CheckBox cbox = (CheckBox) v.getTag();
+
+    final ProxyedApp app = (ProxyedApp) cbox.getTag();
+    if (app != null) {
+      app.setProxyed(!app.isProxyed());
+      cbox.setChecked(app.isProxyed());
+    }
+
+    saveAppSettings(this);
+
+  }
 
 }
