@@ -69,7 +69,6 @@ import com.btr.proxy.selector.pac.UrlPacScriptSource;
 
 import org.proxydroid.utils.Utils;
 
-import java.io.FileOutputStream;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.NetworkInterface;

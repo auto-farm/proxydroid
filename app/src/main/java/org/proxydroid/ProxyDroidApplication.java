@@ -38,11 +38,11 @@
 
 package org.proxydroid;
 
-import android.app.Application;
+import androidx.multidex.MultiDexApplication;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-public class ProxyDroidApplication extends Application {
+public class ProxyDroidApplication extends  MultiDexApplication {
 
     public FirebaseAnalytics firebaseAnalytics;
 

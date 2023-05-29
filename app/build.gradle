@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
-apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 29
@@ -10,8 +9,8 @@ android {
         minSdkVersion 16
         targetSdkVersion 29
         versionCode 72
-        versionName "3.2.0"
-
+        versionName "1.0.0"
+        multiDexEnabled true
         ndk {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your APK.
@@ -20,6 +19,7 @@ android {
     }
     buildTypes {
         release {
+            //multiDexKeepFile file('multidex-config.txt')
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -28,15 +28,22 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
-
+    lintOptions {
+        disable 'LongLogTag'
+        disable 'MissingPermission'
+    }
     externalNativeBuild {
         cmake {
-            version '3.10.2'
+            version '3.23.0'
             path "src/main/cpp/CMakeLists.txt"
         }
     }
 }
-
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute module('org.hamcrest:hamcrest-core:1.1') with module('junit:junit:4.10')
+    }
+}
 configurations {
     compile.exclude group: "junit", module: "junit"
 }
@@ -47,8 +54,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.mozilla:rhino:1.7.11'
-    implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-ads:18.3.0'
-    implementation 'com.google.firebase:firebase-analytics:17.2.1'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.test.ext:junit:1.1.2'
 }

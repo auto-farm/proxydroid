@@ -295,7 +295,7 @@ public class Profile implements Serializable {
 
 		StringBuffer sb = new StringBuffer();
 		for (String addr : addrs) {
-			String ta = validateAddr(addr);
+			String ta = validateAddr(addr.trim());
 			if (ta != null)
 				sb.append(ta + "|");
 		}

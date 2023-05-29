@@ -79,10 +79,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.ksmaze.android.preference.ListPreferenceMultiSelect;
 
 import org.proxydroid.utils.Constraints;
@@ -138,7 +134,6 @@ public class ProxyDroid extends PreferenceActivity
     private CheckBoxPreference isBypassAppsCheck;
     private Preference proxyedApps;
     private Preference bypassAddrs;
-    private AdView adView;
     private BroadcastReceiver ssidReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -299,7 +294,8 @@ public class ProxyDroid extends PreferenceActivity
     }
 
     private LinearLayout getLayout(ViewParent parent) {
-        if (parent instanceof LinearLayout) return (LinearLayout) parent;
+        if (parent instanceof LinearLayout)
+            return (LinearLayout) parent;
         if (parent != null) {
             return getLayout(parent.getParent());
         } else {
@@ -315,27 +311,14 @@ public class ProxyDroid extends PreferenceActivity
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.proxydroid_preference);
 
-        ((ProxyDroidApplication)getApplication())
-                .firebaseAnalytics.setCurrentScreen(this, "home_screen", null);
+        ((ProxyDroidApplication) getApplication()).firebaseAnalytics.setCurrentScreen(this, "home_screen", null);
 
-        // Create the adView
-        adView = new AdView(this);
-        adView.setAdUnitId("ca-app-pub-9097031975646651/4806879927");
-        adView.setAdSize(AdSize.SMART_BANNER);
         // Lookup your LinearLayout assuming it’s been given
         // the attribute android:id="@+id/mainLayout"
         ViewParent parent = getListView().getParent();
         LinearLayout layout = getLayout(parent);
 
         // disable adds
-        if (layout != null) {
-            // Add the adView to it
-            layout.addView(adView, 0);
-            adView.loadAd(new AdRequest.Builder()
-                    .addTestDevice("F58907F28184A828DD0DB6F8E38189C6")
-                    .addTestDevice("236666026C17FEFB1B547C4A3B2322CD")
-                    .build());
-        }
 
         hostText = (EditTextPreference) findPreference("host");
         portText = (EditTextPreference) findPreference("port");
@@ -359,7 +342,7 @@ public class ProxyDroid extends PreferenceActivity
         isBypassAppsCheck = (CheckBoxPreference) findPreference("isBypassApps");
 
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-
+        Log.d(TAG, settings.getString("ssid", ""));
         String profileValuesString = settings.getString("profileValues", "");
 
         if (profileValuesString.equals("")) {
@@ -430,16 +413,16 @@ public class ProxyDroid extends PreferenceActivity
     @Override
     public void onDestroy() {
 
-        if (adView != null) adView.destroy();
-
-        if (ssidReceiver != null) unregisterReceiver(ssidReceiver);
+        if (ssidReceiver != null)
+            unregisterReceiver(ssidReceiver);
 
         super.onDestroy();
     }
 
     private boolean serviceStop() {
 
-        if (!Utils.isWorking()) return false;
+        if (!Utils.isWorking())
+            return false;
 
         try {
             stopService(new Intent(ProxyDroid.this, ProxyDroidService.class));
@@ -454,7 +437,8 @@ public class ProxyDroid extends PreferenceActivity
      */
     private boolean serviceStart() {
 
-        if (Utils.isWorking()) return false;
+        if (Utils.isWorking())
+            return false;
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -584,7 +568,8 @@ public class ProxyDroid extends PreferenceActivity
             userText.setEnabled(true);
             passwordText.setEnabled(true);
             isNTLMCheck.setEnabled(true);
-            if (isNTLMCheck.isChecked()) domainText.setEnabled(true);
+            if (isNTLMCheck.isChecked())
+                domainText.setEnabled(true);
         }
         if ("https".equals(proxyTypeList.getValue())) {
             certificateText.setEnabled(true);
@@ -670,7 +655,8 @@ public class ProxyDroid extends PreferenceActivity
         Editor edit = settings.edit();
 
         if (Utils.isWorking()) {
-            if (settings.getBoolean("isConnecting", false)) isRunningCheck.setEnabled(false);
+            if (settings.getBoolean("isConnecting", false))
+                isRunningCheck.setEnabled(false);
             edit.putBoolean("isRunning", true);
         } else {
             if (settings.getBoolean("isRunning", false)) {
@@ -736,7 +722,8 @@ public class ProxyDroid extends PreferenceActivity
                     settings.getBoolean("isPAC", false) ? R.string.host_pac_summary
                             : R.string.host_summary)));
         }
-        if (!settings.getString("password", "").equals("")) passwordText.setSummary("*********");
+        if (!settings.getString("password", "").equals(""))
+            passwordText.setSummary("*********");
         if (!settings.getString("proxyType", "").equals("")) {
             proxyTypeList.setSummary(settings.getString("proxyType", "").toUpperCase());
         }
@@ -794,7 +781,7 @@ public class ProxyDroid extends PreferenceActivity
                 profileList.setSummary(getProfileName(profileString));
             }
         }
-
+        isBypassAppsCheck.setChecked(settings.getBoolean("isBypassApps", false));
         if (key.equals("isConnecting")) {
             if (settings.getBoolean("isConnecting", false)) {
                 Log.d(TAG, "Connecting start");
@@ -826,6 +813,7 @@ public class ProxyDroid extends PreferenceActivity
             } else {
                 hostText.setSummary(settings.getString("host", ""));
             }
+            isPACCheck.setChecked(settings.getBoolean("isPAC", false));
         }
 
         if (key.equals("isAuth")) {
@@ -844,6 +832,7 @@ public class ProxyDroid extends PreferenceActivity
                     domainText.setEnabled(false);
                 }
             }
+            isAuthCheck.setChecked(settings.getBoolean("isAuth", false));
         }
 
         if (key.equals("isNTLM")) {
@@ -852,6 +841,7 @@ public class ProxyDroid extends PreferenceActivity
             } else {
                 domainText.setEnabled(true);
             }
+            isNTLMCheck.setChecked(settings.getBoolean("isNTLM", false));
         }
 
         if (key.equals("proxyType")) {
@@ -871,6 +861,7 @@ public class ProxyDroid extends PreferenceActivity
                 ssidList.setEnabled(false);
                 excludedSsidList.setEnabled(false);
             }
+            isAutoConnectCheck.setChecked(settings.getBoolean("isAutoConnect", false));
         }
 
         if (key.equals("isAutoSetProxy")) {
@@ -881,6 +872,7 @@ public class ProxyDroid extends PreferenceActivity
                 proxyedApps.setEnabled(true);
                 isBypassAppsCheck.setEnabled(true);
             }
+            isAutoSetProxyCheck.setChecked(settings.getBoolean("isAutoSetProxy", false));
         }
 
         if (key.equals("isRunning")) {
@@ -891,7 +883,8 @@ public class ProxyDroid extends PreferenceActivity
                 } else {
                     ((CheckBoxPreference) isRunningCheck).setChecked(true);
                 }
-                if (!Utils.isConnecting()) serviceStart();
+                if (!Utils.isConnecting())
+                    serviceStart();
             } else {
                 enableAll();
                 if (Build.VERSION.SDK_INT >= 14) {
@@ -899,7 +892,8 @@ public class ProxyDroid extends PreferenceActivity
                 } else {
                     ((CheckBoxPreference) isRunningCheck).setChecked(false);
                 }
-                if (!Utils.isConnecting()) serviceStop();
+                if (!Utils.isConnecting())
+                    serviceStop();
             }
         }
 
@@ -1039,12 +1033,13 @@ public class ProxyDroid extends PreferenceActivity
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
                         EditText profileName = (EditText) textEntryView.findViewById(R.id.text_edit);
-                        SharedPreferences settings =
-                                PreferenceManager.getDefaultSharedPreferences(ProxyDroid.this);
+                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ProxyDroid.this);
                         String name = profileName.getText().toString();
-                        if (name == null) return;
+                        if (name == null)
+                            return;
                         name = name.replace("|", "");
-                        if (name.length() <= 0) return;
+                        if (name.length() <= 0)
+                            return;
                         Editor ed = settings.edit();
                         ed.putString("profile" + profile, name);
                         ed.commit();
@@ -1139,10 +1134,10 @@ public class ProxyDroid extends PreferenceActivity
 
         Utils.runRootCommand(
                 "chmod 700 " + filePath + "/redsocks\n"
-                + "chmod 700 " + filePath + "/proxy.sh\n"
-                + "chmod 700 " + filePath + "/gost.sh\n"
-                + "chmod 700 " + filePath + "/cntlm\n"
-                + "chmod 700 " + filePath + "/gost\n");
+                        + "chmod 700 " + filePath + "/proxy.sh\n"
+                        + "chmod 700 " + filePath + "/gost.sh\n"
+                        + "chmod 700 " + filePath + "/cntlm\n"
+                        + "chmod 700 " + filePath + "/gost\n");
     }
 
     @Override

@@ -1,45 +1,134 @@
-## INTRO
+# PROXYDROID
+## Description
 
-Global Proxy App for Android System
+- This is a modified version of proxydroid that supports tweaking configuration via command line.
+- Here is the link to the original version of proxydroid: [ProxyDroid](https://github.com/madeye/proxydroid)
 
-ProxyDroid is distributed under GPLv3 with many other open source software, 
-here is a list of them:
+## Usage
+> Note: Root access is required
 
- * cntlm - authentication proxy: http://cntlm.sourceforge.net/
- * redsocks - transparent socks redirector: http://darkk.net.ru/redsocks/
- * netfilter/iptables - NAT module: http://www.netfilter.org/
- * transproxy - transparent proxy for HTTP: http://transproxy.sourceforge.net/
- * stunnel - multiplatform SSL tunneling proxy: http://www.stunnel.org/
+- Install ProxyDroid apk
+- Sending Broadcast intent via Adb or your Android Services/Apps.
+- Example:
 
-## TRAVIS CI STATUS
-
-[![Build Status](https://secure.travis-ci.org/madeye/proxydroid.png)](http://travis-ci.org/madeye/proxydroid)
-
-[Nightly Builds](http://buildbot.sinaapp.com)
-
-## PREREQUISITES
-
-* JDK 1.6+
-* Maven 3.0.5
-* Android SDK r17+
-* Android NDK r8+
-
-* Local Maven Dependencies
-
-  Use Maven Android SDK Deployer to install all android related dependencies.
-
-  ```bash
-  git clone https://github.com/mosabua/maven-android-sdk-deployer.git 
-  pushd maven-android-sdk-deployer
-  export ANDROID_HOME=/path/to/android/sdk
-  mvn install -P 4.1
-  popd
-  ```
-
-## BUILD
-
-Invoke the building like this
-
-```bash
-  mvn clean install
-```
+  - Turn on/off proxydroid service
+     ```
+     adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.PROXY_SWITCH_ACTION --ei switch 0 
+     ## use 0 to turn off and 1 to turn on
+     ```
+  - Change profile 
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setprofile "you_profile_name"
+    ## If your profile doesn't exist, it will automatically create a new profile with such name.
+    ```
+  - Change host
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es host "host_string"
+    ```
+  - Change port
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ei port port_value
+    ## port value must be an integer
+    ```
+  - Change proxyType
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es proxytype "proxy_type_value"
+    ## proxy_type_value must be one of the following values: HTTP, HTTPS, SOCKS4, SOCKS5, HTTP-Tunnel
+    ```
+  - Change authenticate mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isAuth true|false
+    ```
+  - Change username
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es username "abcxyz"
+    ```
+  - Change password
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es password "abcxyz"
+    ```
+  - Change autoconnect mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isAutoSetProxy true|false
+    ``` 
+  - Change PAC mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isPAC true|false
+    ``` 
+  - Change bound or never bound ssid list
+    - You must restart app to see change.
+    - If the number of ssids is more than 1, they must be separated by commas
+    - Alternatively, you can use the following defaults: "WIFI", "WIFI/2G/3G" or "2G/3G"
+    - Set bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setssid "WIFI, wifi_chua, 2G/3G"
+      ```
+    - Set never bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setexcludedssid "WIFI, wifi_chua, 2G/3G"
+      ```
+    - Add bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es addssid "trachanhsuoi"
+      ```
+    - Add never bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es addexcludedssid "trachanhsuoi"
+      ```
+    - Remove bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es delssid "trachanhsuoi, 2G/3G"
+      ```
+    - Remove never bound ssid list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es delexcludedssid "trachanhsuoi, 2G/3G"
+      ```
+  - Change bypass address list
+    - Set bypass address list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setssid "WIFI, wifi_chua, 2G/3G"
+      ```
+    - Add bypass address list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setexcludedssid "WIFI, wifi_chua, 2G/3G"
+      ```
+    - Remove bypass address list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es addssid "trachanhsuoi"
+      ```
+  - Change NTLM mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isNTLM true|false
+    ```
+  - Change domain
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es domain "abcxyz.org"
+    ```
+  - Change certificate
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es certificate "abcxyzghik......"
+    ```
+  - Change global proxy mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isGlobalProxy true|false
+    ```
+  - Change bypass app mode
+    ```
+    adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --ez isBypassApps true|false
+    ```
+  - Change bypass app list
+    - you must use package name instead of app name
+    - Set Bypass or proxyed app list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es setproxyedapp "com.facebook.katana, org.proxydroid"
+      ```
+    - Add bypass or proxyed app list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es addproxyedapp "com.facebook.katana, org.proxydroid"
+      ```
+    - Remove bypass or proxyed app list
+      ```
+      adb shell am broadcast -a org.proxydroid.ProxyDroidWidgetProvider.CHANGE_CONFIG_ACTION --es delproxyedapp "com.facebook.katana, org.proxydroid"
+      ```
+      
+    

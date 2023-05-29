@@ -56,7 +56,6 @@ public class ProxyDroidReceiver extends BroadcastReceiver {
 		mProfile.getProfile(settings);
 
 		if (mProfile.isAutoConnect()) {
-
 			Intent it = new Intent(context, ProxyDroidService.class);
 			Bundle bundle = new Bundle();
 			bundle.putString("host", mProfile.getHost());
